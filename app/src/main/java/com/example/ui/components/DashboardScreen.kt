@@ -93,6 +93,9 @@ fun DashboardScreen(
                     }
                 }
 
+                // 0. User Profile System & Profile Switcher Bar
+                UserProfileSelector(viewModel = viewModel)
+
                 // 1. Core Cloud Replication Grid (Drive, Gmail, Chrome, and CALENDAR sync controllers)
                 SyncDashboard(viewModel = viewModel)
 

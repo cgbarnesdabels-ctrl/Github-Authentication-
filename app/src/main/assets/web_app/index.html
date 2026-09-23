@@ -62,6 +62,13 @@
             <span class="font-mono text-slate-300">SQLite Sandbox Tunnel Active</span>
         </div>
         <div class="flex items-center space-x-3">
+            <!-- Active Profile Quick Switcher Pill -->
+            <button onclick="switchTab('profiles')" id="top-profile-badge" class="flex items-center space-x-2 bg-slate-950 hover:bg-slate-800 border border-slate-750 px-2.5 py-1 rounded-full transition group" title="Click to view & switch profiles">
+                <span id="top-profile-avatar" class="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-[9px] flex items-center justify-center border border-emerald-500/40">A</span>
+                <span id="top-profile-name" class="font-bold text-xs text-slate-200 group-hover:text-emerald-400 transition">Alex Chen</span>
+                <span id="top-profile-id" class="text-[10px] font-mono text-cyan-400 bg-slate-900 px-1.5 py-0.2 rounded border border-slate-700/60">usr_alex_01</span>
+                <svg class="w-3 h-3 text-slate-400 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
             <span id="uptime-tag" class="font-mono text-[10px] bg-slate-800 text-emerald-400 px-2 py-0.5 rounded border border-slate-700">RTT: 12ms</span>
             <button onclick="requestHardRef()" class="hover:text-white transition duration-200" title="Hard Refresh Web Database">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18"></path></svg>
@@ -92,6 +99,11 @@
                 <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left text-sm font-semibold bg-slate-800 text-white border-l-4 border-emerald-500 transition duration-150">
                     <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 114 0 2 2 0 01-4 0zM12 6a2 2 0 114 0 2 2 0 01-4 0zM16 16a2 2 0 120-4 2 2 0 020 4zM12 18a2 2 0 100-4 2 2 0 000 4zM19 12a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     <span>Dynamic Dashboard</span>
+                </button>
+
+                <button onclick="switchTab('profiles')" id="nav-profiles" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition duration-150">
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <span>User Profiles & IDs</span>
                 </button>
                 
                 <button onclick="switchTab('logs')" id="nav-logs" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition duration-150">
@@ -400,7 +412,17 @@
                             </h2>
                             <p class="text-xs text-slate-400 mt-1">Commits steps, sleep metrics, and biometric indices directly to the offline Room SQL Sandbox database, auto-triggering background replication.</p>
                             
-                            <form id="metrics-form" onsubmit="submitHealthMetrics(event)" class="space-y-4 mt-6">
+                            <!-- Profile Target Information Banner -->
+                            <div class="mt-4 p-2.5 bg-slate-950 border border-slate-800 rounded-lg flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-[10px] uppercase font-bold text-slate-500">Logging For Profile:</span>
+                                    <span id="form-target-profile-name" class="text-xs font-bold text-slate-200">Alex Chen</span>
+                                    <span id="form-target-profile-id" class="text-[10px] font-mono text-cyan-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-700">usr_alex_01</span>
+                                </div>
+                                <button type="button" onclick="switchTab('profiles')" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold transition">Switch Profile &rarr;</button>
+                            </div>
+
+                            <form id="metrics-form" onsubmit="submitHealthMetrics(event)" class="space-y-4 mt-4">
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Steps Walked</label>
@@ -1101,6 +1123,124 @@
                 </div>
             </div>
 
+            <!-- TAB: USER PROFILES & UNIQUE ID LEDGER -->
+            <div id="tab-profiles" class="tab-content space-y-6 hidden">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 space-y-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-sm font-bold tracking-wide uppercase text-slate-100 flex items-center space-x-2">
+                                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                <span>User Profiles & Health Data Isolation</span>
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-1">Each health profile possesses an immutable, unique cryptographic User ID. Health data, telemetry streams, and cloud pipelines are partitioned per user profile.</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span id="profiles-count-badge" class="text-xs bg-slate-950 border border-slate-700 text-emerald-400 font-mono px-3 py-1 rounded-lg">3 Profiles Registered</span>
+                        </div>
+                    </div>
+
+                    <!-- Active Profile Hero Card -->
+                    <div id="active-profile-card" class="bg-slate-950 border border-emerald-500/30 rounded-xl p-5 relative overflow-hidden">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div class="flex items-center space-x-4">
+                                <div id="hero-profile-avatar" class="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xl flex items-center justify-center border-2 border-emerald-500">AC</div>
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <h3 id="hero-profile-name" class="text-lg font-bold text-slate-100">Alex Chen</h3>
+                                        <span class="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded font-extrabold">ACTIVE NOW</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2 mt-1">
+                                        <span class="text-xs text-slate-400">User ID:</span>
+                                        <span id="hero-profile-id" class="text-xs font-mono font-bold text-cyan-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">usr_alex_01</span>
+                                        <button onclick="copyUserIdToClipboard()" class="text-[10px] text-slate-400 hover:text-white" title="Copy User ID">📋 Copy</button>
+                                    </div>
+                                    <p id="hero-profile-meta" class="text-xs text-slate-400 mt-1">Age: 28 &bull; Blood Type: O+ &bull; Node: Google Drive Primary Node</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg text-center min-w-[90px]">
+                                    <span class="block text-[10px] uppercase font-bold text-slate-500">Synced Data</span>
+                                    <span id="hero-profile-metrics-count" class="text-base font-extrabold text-emerald-400 font-mono">17</span>
+                                    <span class="block text-[9px] text-slate-500">Records</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Profiles Grid -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Registered Health Profiles &mdash; Click to Switch</h3>
+                        </div>
+                        <div id="profiles-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Populated dynamically by renderUserProfilesUI() -->
+                        </div>
+                    </div>
+
+                    <!-- Create New Profile Section -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-4">
+                        <div class="border-b border-slate-800 pb-3">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center space-x-2">
+                                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                                <span>Provision New Health Profile</span>
+                            </h3>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Generates a distinct cryptographic identity and isolated SQLite sync partition.</p>
+                        </div>
+
+                        <form id="create-profile-form" onsubmit="handleCreateProfileSubmit(event)" class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Full Name</label>
+                                    <input id="new-profile-name" type="text" required placeholder="e.g. Taylor Morgan" oninput="updateProfileIdPreview()" class="w-full bg-slate-900 border border-slate-800 px-3 py-2 rounded-lg text-white text-xs focus:outline-none focus:border-emerald-500" />
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Email (Optional)</label>
+                                    <input id="new-profile-email" type="email" placeholder="taylor@healthsync.io" class="w-full bg-slate-900 border border-slate-800 px-3 py-2 rounded-lg text-white text-xs focus:outline-none focus:border-emerald-500" />
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Age</label>
+                                    <input id="new-profile-age" type="number" min="1" max="120" value="28" class="w-full bg-slate-900 border border-slate-800 px-3 py-2 rounded-lg text-white text-xs focus:outline-none focus:border-emerald-500" />
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Blood Type</label>
+                                    <select id="new-profile-blood" class="w-full bg-slate-900 border border-slate-800 px-3 py-2 rounded-lg text-white text-xs focus:outline-none focus:border-emerald-500">
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Accent:</span>
+                                    <div class="flex space-x-2" id="color-picker-group">
+                                        <button type="button" onclick="selectProfileColor('#10B981')" class="color-btn w-6 h-6 rounded-full bg-[#10B981] border-2 border-white ring-2 ring-emerald-500" data-color="#10B981"></button>
+                                        <button type="button" onclick="selectProfileColor('#06B6D4')" class="color-btn w-6 h-6 rounded-full bg-[#06B6D4] border border-transparent" data-color="#06B6D4"></button>
+                                        <button type="button" onclick="selectProfileColor('#8B5CF6')" class="color-btn w-6 h-6 rounded-full bg-[#8B5CF6] border border-transparent" data-color="#8B5CF6"></button>
+                                        <button type="button" onclick="selectProfileColor('#F59E0B')" class="color-btn w-6 h-6 rounded-full bg-[#F59E0B] border border-transparent" data-color="#F59E0B"></button>
+                                        <button type="button" onclick="selectProfileColor('#EC4899')" class="color-btn w-6 h-6 rounded-full bg-[#EC4899] border border-transparent" data-color="#EC4899"></button>
+                                        <button type="button" onclick="selectProfileColor('#3B82F6')" class="color-btn w-6 h-6 rounded-full bg-[#3B82F6] border border-transparent" data-color="#3B82F6"></button>
+                                    </div>
+                                    <div class="text-[11px] text-slate-400 pl-2">
+                                        Auto Assigned ID: <span id="preview-assigned-id" class="font-mono text-cyan-400 font-bold">usr_taylor_xxxx</span>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-lg transition shadow-md">
+                                    + CREATE USER PROFILE
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <!-- Web App Live RPC Command Log Terminal representing Web-Native bindings -->
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 family-mono text-[9px] text-slate-400 font-mono">
                 <div class="flex items-center justify-between pb-1.5 border-b border-slate-800">
@@ -1120,6 +1260,241 @@
         var currentTab = "dashboard";
         var globalLogs = [];
         var globalMetrics = [];
+        var currentProfiles = [];
+        var activeProfile = null;
+        var activeProfileId = "usr_alex_01";
+        var selectedProfileColorHex = "#10B981";
+
+        // User Profile Management Core
+        function updateUserProfiles(profilesJson, activeProfileJson, activeId) {
+            terminalLog("[BRIDGE CALLBACK] User profiles updated from native SQLite database.");
+            try {
+                currentProfiles = typeof profilesJson === "string" ? JSON.parse(profilesJson) : profilesJson;
+                activeProfile = activeProfileJson && activeProfileJson !== "null" ? (typeof activeProfileJson === "string" ? JSON.parse(activeProfileJson) : activeProfileJson) : null;
+                activeProfileId = activeId || (activeProfile ? activeProfile.id : (currentProfiles[0] ? currentProfiles[0].id : "usr_alex_01"));
+                renderUserProfilesUI();
+            } catch (err) {
+                terminalLog("[BRIDGE ERROR] Failed parsing user profiles: " + err.message);
+            }
+        }
+
+        function renderUserProfilesUI() {
+            // 1. Top bar active profile pill
+            var topName = document.getElementById("top-profile-name");
+            var topId = document.getElementById("top-profile-id");
+            var topAvatar = document.getElementById("top-profile-avatar");
+            
+            var currentName = activeProfile ? activeProfile.name : "Alex Chen";
+            var currentUid = activeProfile ? activeProfile.id : activeProfileId;
+            var currentInitial = currentName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "AC";
+            var currentColor = (activeProfile && activeProfile.avatarColorHex) ? activeProfile.avatarColorHex : "#10B981";
+
+            if (topName) topName.innerText = currentName;
+            if (topId) topId.innerText = currentUid;
+            if (topAvatar) {
+                topAvatar.innerText = currentInitial;
+                topAvatar.style.backgroundColor = currentColor + "26";
+                topAvatar.style.color = currentColor;
+                topAvatar.style.borderColor = currentColor + "66";
+            }
+
+            // 2. Biometrics form target banner
+            var formName = document.getElementById("form-target-profile-name");
+            var formId = document.getElementById("form-target-profile-id");
+            if (formName) formName.innerText = currentName;
+            if (formId) formId.innerText = currentUid;
+
+            // 3. Tab Profiles Hero Card
+            var heroAvatar = document.getElementById("hero-profile-avatar");
+            var heroName = document.getElementById("hero-profile-name");
+            var heroId = document.getElementById("hero-profile-id");
+            var heroMeta = document.getElementById("hero-profile-meta");
+            var heroCount = document.getElementById("hero-profile-metrics-count");
+            var countBadge = document.getElementById("profiles-count-badge");
+
+            if (heroAvatar) {
+                heroAvatar.innerText = currentInitial;
+                heroAvatar.style.backgroundColor = currentColor + "26";
+                heroAvatar.style.color = currentColor;
+                heroAvatar.style.borderColor = currentColor;
+            }
+            if (heroName) heroName.innerText = currentName;
+            if (heroId) heroId.innerText = currentUid;
+            if (heroMeta && activeProfile) {
+                heroMeta.innerText = `Age: ${activeProfile.age} • Blood Type: ${activeProfile.bloodType} • Node: ${activeProfile.syncTarget || "Google Drive Node"}`;
+            }
+            if (heroCount) {
+                heroCount.innerText = globalMetrics ? globalMetrics.length : 0;
+            }
+            if (countBadge) {
+                countBadge.innerText = `${currentProfiles.length} Profiles Registered`;
+            }
+
+            // 4. Profiles Grid Rendering
+            var grid = document.getElementById("profiles-grid");
+            if (grid) {
+                grid.innerHTML = "";
+                currentProfiles.forEach(p => {
+                    var isCurrent = p.id === activeProfileId;
+                    var pColor = p.avatarColorHex || "#10B981";
+                    var pInitial = p.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "US";
+                    
+                    var card = document.createElement("div");
+                    card.className = isCurrent 
+                        ? "bg-slate-900 border-2 rounded-xl p-4 flex flex-col justify-between space-y-4 shadow-lg transition duration-150"
+                        : "bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-xl p-4 flex flex-col justify-between space-y-4 transition duration-150";
+                    if (isCurrent) {
+                        card.style.borderColor = pColor;
+                    }
+
+                    var deleteBtnHtml = (!isCurrent && currentProfiles.length > 1) 
+                        ? `<button onclick="deleteUserProfile('${p.id}')" class="text-rose-400 hover:text-rose-300 text-[10px] font-bold px-2 py-1 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded" title="Delete Profile">✕</button>` 
+                        : "";
+
+                    var actionBtnHtml = isCurrent
+                        ? `<span class="w-full text-center py-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-extrabold text-[10px] rounded-lg tracking-wider">✓ ACTIVE PROFILE</span>`
+                        : `<button onclick="switchUserProfile('${p.id}')" class="w-full py-2 bg-slate-800 hover:bg-slate-700 active:bg-slate-650 text-slate-100 font-bold text-[10px] rounded-lg border border-slate-700 transition">SWITCH TO THIS PROFILE</button>`;
+
+                    card.innerHTML = `
+                        <div class="space-y-3">
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border" style="background-color: ${pColor}26; color: ${pColor}; border-color: ${pColor};">
+                                        ${pInitial}
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center space-x-1.5">
+                                            <h4 class="font-bold text-sm text-slate-100">${p.name}</h4>
+                                            ${isCurrent ? '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
+                                        </div>
+                                        <span class="text-[10px] font-mono text-cyan-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">${p.id}</span>
+                                    </div>
+                                </div>
+                                ${deleteBtnHtml}
+                            </div>
+                            <div class="text-[11px] text-slate-400 space-y-1 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80">
+                                <div class="flex justify-between"><span>Age:</span> <span class="font-semibold text-slate-300">${p.age} yrs</span></div>
+                                <div class="flex justify-between"><span>Blood Type:</span> <span class="font-semibold text-slate-300">${p.bloodType}</span></div>
+                                <div class="flex justify-between"><span>Sync Node:</span> <span class="font-mono text-slate-400 text-[10px]">${p.syncTarget || "Google Cloud"}</span></div>
+                            </div>
+                        </div>
+                        ${actionBtnHtml}
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        function switchUserProfile(profileId) {
+            terminalLog(`[BRIDGE ACTION] Initiating profile switch to user ID: ${profileId}`);
+            activeProfileId = profileId;
+            var found = currentProfiles.find(p => p.id === profileId);
+            if (found) activeProfile = found;
+            renderUserProfilesUI();
+
+            if (window.AndroidBridge && window.AndroidBridge.switchProfile) {
+                window.AndroidBridge.switchProfile(profileId);
+            }
+            showToast(`Active profile switched to ${activeProfile ? activeProfile.name : profileId}`, "success", 2500);
+            
+            // Reload metrics and charts for new profile
+            setTimeout(() => {
+                if (window.AndroidBridge && window.AndroidBridge.requestMetricsJson) {
+                    window.AndroidBridge.requestMetricsJson();
+                }
+            }, 300);
+        }
+
+        function selectProfileColor(hex) {
+            selectedProfileColorHex = hex;
+            document.querySelectorAll("#color-picker-group .color-btn").forEach(btn => {
+                if (btn.getAttribute("data-color") === hex) {
+                    btn.className = `color-btn w-6 h-6 rounded-full border-2 border-white ring-2 ring-emerald-500`;
+                } else {
+                    btn.className = `color-btn w-6 h-6 rounded-full border border-transparent`;
+                }
+            });
+        }
+
+        function updateProfileIdPreview() {
+            var nameVal = document.getElementById("new-profile-name").value.trim().toLowerCase();
+            var slug = nameVal.replace(/[^a-z0-9]/g, "_").slice(0, 8) || "user";
+            var preview = document.getElementById("preview-assigned-id");
+            if (preview) {
+                preview.innerText = `usr_${slug}_xxxx`;
+            }
+        }
+
+        function handleCreateProfileSubmit(e) {
+            e.preventDefault();
+            var name = document.getElementById("new-profile-name").value.trim();
+            var email = document.getElementById("new-profile-email").value.trim();
+            var age = parseInt(document.getElementById("new-profile-age").value) || 28;
+            var blood = document.getElementById("new-profile-blood").value;
+            
+            if (!name) return;
+
+            terminalLog(`[BRIDGE ACTION] Provisioning new user profile: ${name} (${selectedProfileColorHex})`);
+
+            if (window.AndroidBridge && window.AndroidBridge.createProfile) {
+                window.AndroidBridge.createProfile(name, email, age, blood, selectedProfileColorHex);
+                document.getElementById("create-profile-form").reset();
+                updateProfileIdPreview();
+                showToast(`Profile for ${name} created successfully!`, "success", 3000);
+            } else {
+                // Mock in browser
+                var slug = name.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 8);
+                var newId = `usr_${slug}_${Math.floor(1000 + Math.random() * 9000)}`;
+                var newProf = {
+                    id: newId,
+                    name: name,
+                    email: email,
+                    age: age,
+                    bloodType: blood,
+                    avatarColorHex: selectedProfileColorHex,
+                    syncTarget: "Primary Mobile Node",
+                    createdAt: Date.now()
+                };
+                currentProfiles.push(newProf);
+                switchUserProfile(newId);
+                document.getElementById("create-profile-form").reset();
+                updateProfileIdPreview();
+                showToast(`[MOCK] Profile ${name} created with ID: ${newId}`, "success", 3000);
+            }
+        }
+
+        function deleteUserProfile(profileId) {
+            if (currentProfiles.length <= 1) {
+                showToast("Cannot delete the only registered profile.", "error", 2500);
+                return;
+            }
+            if (!confirm(`Are you sure you want to delete profile ${profileId}? All isolated health metrics will be removed.`)) {
+                return;
+            }
+
+            terminalLog(`[BRIDGE ACTION] Deleting user profile and health data: ${profileId}`);
+            if (window.AndroidBridge && window.AndroidBridge.deleteProfile) {
+                window.AndroidBridge.deleteProfile(profileId);
+            } else {
+                currentProfiles = currentProfiles.filter(p => p.id !== profileId);
+                if (activeProfileId === profileId) {
+                    activeProfileId = currentProfiles[0].id;
+                    activeProfile = currentProfiles[0];
+                }
+                renderUserProfilesUI();
+            }
+            showToast(`Profile ${profileId} deleted.`, "info", 2500);
+        }
+
+        function copyUserIdToClipboard() {
+            var id = activeProfile ? activeProfile.id : activeProfileId;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(id);
+                showToast(`Copied User ID: ${id}`, "info", 2000);
+            } else {
+                prompt("Copy User ID:", id);
+            }
+        }
         
         // Tab switching routine
         function switchTab(tabId) {
@@ -1247,6 +1622,9 @@
                 }
                 if (window.AndroidBridge.requestMetricsJson) {
                     window.AndroidBridge.requestMetricsJson();
+                }
+                if (window.AndroidBridge.requestProfilesJson) {
+                    window.AndroidBridge.requestProfilesJson();
                 }
             } else {
                 // Mock payload for testing/browser fallback
@@ -1878,6 +2256,13 @@
 
             updateEventsList(JSON.stringify(mockLogs));
             updateMetrics(JSON.stringify(mockMetrics));
+            updateUserProfiles(JSON.stringify([
+                { id: "usr_alex_01", name: "Alex Chen", email: "alex.chen@healthsync.io", age: 28, bloodType: "O+", avatarColorHex: "#10B981", syncTarget: "Google Drive Primary Node", createdAt: Date.now() - 86400000 * 30 },
+                { id: "usr_jordan_02", name: "Dr. Jordan Taylor", email: "jordan.taylor@medsync.org", age: 41, bloodType: "A+", avatarColorHex: "#06B6D4", syncTarget: "Clinical FHIR Gateway", createdAt: Date.now() - 86400000 * 15 },
+                { id: "usr_sam_03", name: "Sam Rivera", email: "sam.rivera@athletic.net", age: 24, bloodType: "B+", avatarColorHex: "#8B5CF6", syncTarget: "Fitbit Wearable Cloud", createdAt: Date.now() - 86400000 * 5 }
+            ]), JSON.stringify({
+                id: "usr_alex_01", name: "Alex Chen", email: "alex.chen@healthsync.io", age: 28, bloodType: "O+", avatarColorHex: "#10B981", syncTarget: "Google Drive Primary Node", createdAt: Date.now() - 86400000 * 30
+            }), "usr_alex_01");
             updateSyncStates(JSON.stringify({
                 isGoogleDriveEnabled: false,
                 isGmailEnabled: false,

@@ -20,7 +20,7 @@ import com.example.ui.viewmodel.SyncViewModelFactory
 class MainActivity : ComponentActivity() {
 
     private val db by lazy { AppDatabase.getDatabase(applicationContext) }
-    private val repository by lazy { SyncRepository(db.syncEventDao(), db.healthMetricDao()) }
+    private val repository by lazy { SyncRepository(db.syncEventDao(), db.healthMetricDao(), db.userProfileDao()) }
     private val viewModel: SyncViewModel by viewModels { SyncViewModelFactory(repository) }
 
     private val permissionLauncher = registerForActivityResult(

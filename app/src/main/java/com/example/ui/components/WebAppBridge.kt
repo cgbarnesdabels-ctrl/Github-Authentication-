@@ -27,9 +27,23 @@ class WebAppBridge(
             }
         }
 
+        // Stream metrics for the active user profile
         scope.launch(Dispatchers.Main) {
-            viewModel.allMetrics.collect { metrics ->
+            viewModel.currentMetrics.collect { metrics ->
                 pushMetricsToWeb(metrics)
+            }
+        }
+
+        // Stream user profiles and active profile
+        scope.launch(Dispatchers.Main) {
+            kotlinx.coroutines.flow.combine(
+                viewModel.allProfiles,
+                viewModel.activeProfile,
+                viewModel.activeProfileId
+            ) { profiles, active, activeId ->
+                Triple(profiles, active, activeId)
+            }.collect { (profiles, active, activeId) ->
+                pushProfilesToWeb(profiles, active, activeId)
             }
         }
 
@@ -76,6 +90,16 @@ class WebAppBridge(
         evaluateJavascript("if (window.updateMetrics) { window.updateMetrics('$escapedJson'); }")
     }
 
+    private fun pushProfilesToWeb(
+        profiles: List<com.example.data.model.UserProfile>,
+        active: com.example.data.model.UserProfile?,
+        activeId: String
+    ) {
+        val profilesJson = gson.toJson(profiles).replace("\\", "\\\\").replace("'", "\\'")
+        val activeJson = (if (active != null) gson.toJson(active) else "null").replace("\\", "\\\\").replace("'", "\\'")
+        evaluateJavascript("if (window.updateUserProfiles) { window.updateUserProfiles('$profilesJson', '$activeJson', '$activeId'); }")
+    }
+
     private fun createSyncStatesMap(): Map<String, Any?> {
         return mapOf(
             "isGoogleDriveEnabled" to viewModel.isGoogleDriveEnabled.value,
@@ -105,7 +129,39 @@ class WebAppBridge(
     @JavascriptInterface
     fun requestMetricsJson() {
         scope.launch(Dispatchers.Main) {
-            pushMetricsToWeb(viewModel.allMetrics.value)
+            pushMetricsToWeb(viewModel.currentMetrics.value)
+        }
+    }
+
+    @JavascriptInterface
+    fun requestProfilesJson() {
+        scope.launch(Dispatchers.Main) {
+            pushProfilesToWeb(
+                viewModel.allProfiles.value,
+                viewModel.activeProfile.value,
+                viewModel.activeProfileId.value
+            )
+        }
+    }
+
+    @JavascriptInterface
+    fun switchProfile(profileId: String) {
+        scope.launch(Dispatchers.Main) {
+            viewModel.switchProfile(profileId, context)
+        }
+    }
+
+    @JavascriptInterface
+    fun createProfile(name: String, email: String, age: Int, bloodType: String, colorHex: String) {
+        scope.launch(Dispatchers.Main) {
+            viewModel.createProfile(name, email, age, bloodType, colorHex)
+        }
+    }
+
+    @JavascriptInterface
+    fun deleteProfile(profileId: String) {
+        scope.launch(Dispatchers.Main) {
+            viewModel.deleteProfile(profileId)
         }
     }
 

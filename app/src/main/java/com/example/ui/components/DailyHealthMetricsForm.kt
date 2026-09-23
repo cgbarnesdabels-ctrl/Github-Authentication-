@@ -31,6 +31,7 @@ fun DailyHealthMetricsForm(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val activeProfile by viewModel.activeProfile.collectAsState()
 
     // Fields state holders
     var stepsText by remember { mutableStateOf(TextFieldValue("7450")) }
@@ -66,8 +67,8 @@ fun DailyHealthMetricsForm(
                     style = MaterialTheme.typography.titleLarge.copy(color = Color.White)
                 )
                 Text(
-                    text = "Append dynamic wellness journals to SQLite db",
-                    style = MaterialTheme.typography.labelSmall.copy(color = Slate400)
+                    text = "Associated with: ${activeProfile?.name ?: "User"} (${activeProfile?.id ?: "usr_..."})",
+                    style = MaterialTheme.typography.labelSmall.copy(color = Cyan400)
                 )
             }
         }

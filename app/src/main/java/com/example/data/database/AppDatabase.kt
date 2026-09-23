@@ -6,11 +6,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.data.model.HealthMetric
 import com.example.data.model.SyncEvent
+import com.example.data.model.UserProfile
 
-@Database(entities = [SyncEvent::class, HealthMetric::class], version = 1, exportSchema = false)
+@Database(entities = [SyncEvent::class, HealthMetric::class, UserProfile::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun syncEventDao(): SyncEventDao
     abstract fun healthMetricDao(): HealthMetricDao
+    abstract fun userProfileDao(): UserProfileDao
 
     companion object {
         @Volatile

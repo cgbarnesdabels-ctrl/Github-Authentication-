@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "health_metrics")
 data class HealthMetric(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val userId: String = "usr_alex_01",
     val timestamp: Long,
     val steps: Int,
     val activeMinutes: Int,

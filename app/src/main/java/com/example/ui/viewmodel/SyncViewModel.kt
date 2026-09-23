@@ -11,8 +11,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.data.model.HealthMetric
 import com.example.data.model.SyncConflict
 import com.example.data.model.SyncEvent
+import com.example.data.model.UserProfile
 import com.example.data.repository.SyncRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -27,6 +29,25 @@ class SyncViewModel(private val repository: SyncRepository) : ViewModel() {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val allMetrics: StateFlow<List<HealthMetric>> = repository.allMetrics
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // --- User Profile System State Flows ---
+    val allProfiles: StateFlow<List<UserProfile>> = repository.allProfiles
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val _activeProfileId = MutableStateFlow<String>("usr_alex_01")
+    val activeProfileId = _activeProfileId.asStateFlow()
+
+    val activeProfile: StateFlow<UserProfile?> = combine(allProfiles, _activeProfileId) { profiles, activeId ->
+        profiles.find { it.id == activeId } ?: profiles.firstOrNull()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    // Filter health data strictly for the active user profile
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val currentMetrics: StateFlow<List<HealthMetric>> = _activeProfileId
+        .flatMapLatest { userId ->
+            repository.getMetricsForUser(userId)
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Active synchronization profiles
@@ -75,8 +96,135 @@ class SyncViewModel(private val repository: SyncRepository) : ViewModel() {
     val activeConflict = _activeConflict.asStateFlow()
 
     init {
+        // Seed initial profiles and realistic biometric metrics if database is fresh
+        seedInitialProfilesAndMetrics()
         // Start background replication job simulating continuous sync activity
         startReplicationSimulation()
+    }
+
+    private fun seedInitialProfilesAndMetrics() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val profileCount = repository.getProfileCount()
+            if (profileCount == 0) {
+                val now = System.currentTimeMillis()
+                val initialProfiles = listOf(
+                    UserProfile(
+                        id = "usr_alex_01",
+                        name = "Alex Chen",
+                        email = "alex.chen@healthsync.io",
+                        age = 28,
+                        bloodType = "O+",
+                        avatarColorHex = "#10B981", // Emerald
+                        syncTarget = "Primary Fitness & Vitals Node",
+                        createdAt = now - 86400000L * 30
+                    ),
+                    UserProfile(
+                        id = "usr_jordan_02",
+                        name = "Dr. Jordan Taylor",
+                        email = "jordan.t@healthsync.io",
+                        age = 36,
+                        bloodType = "A+",
+                        avatarColorHex = "#06B6D4", // Cyan
+                        syncTarget = "Cardio & Clinical Ledger",
+                        createdAt = now - 86400000L * 14
+                    ),
+                    UserProfile(
+                        id = "usr_sam_03",
+                        name = "Sam Rivera",
+                        email = "sam.r@healthsync.io",
+                        age = 24,
+                        bloodType = "B+",
+                        avatarColorHex = "#8B5CF6", // Purple
+                        syncTarget = "Recovery & Hydration Tracker",
+                        createdAt = now - 86400000L * 5
+                    )
+                )
+                repository.insertProfiles(initialProfiles)
+            }
+
+            val metricsCount = repository.getMetricsCount()
+            if (metricsCount == 0) {
+                val now = System.currentTimeMillis()
+                val seededMetrics = listOf(
+                    // Alex Chen metrics
+                    HealthMetric(
+                        userId = "usr_alex_01",
+                        timestamp = now - 3600000L * 2,
+                        steps = 8420,
+                        activeMinutes = 52,
+                        sleepHours = 7.8f,
+                        heartRate = 68,
+                        hydrationMl = 1850,
+                        notes = "Morning tempo run around the bay. Heart rate recovered steadily."
+                    ),
+                    HealthMetric(
+                        userId = "usr_alex_01",
+                        timestamp = now - 86400000L * 1,
+                        steps = 9650,
+                        activeMinutes = 60,
+                        sleepHours = 7.5f,
+                        heartRate = 71,
+                        hydrationMl = 2100,
+                        notes = "Interval circuit training and 10k walk. Well hydrated."
+                    ),
+                    HealthMetric(
+                        userId = "usr_alex_01",
+                        timestamp = now - 86400000L * 2,
+                        steps = 7300,
+                        activeMinutes = 40,
+                        sleepHours = 8.0f,
+                        heartRate = 66,
+                        hydrationMl = 1700,
+                        notes = "Rest and recovery day. High sleep quality index."
+                    ),
+
+                    // Dr. Jordan Taylor metrics
+                    HealthMetric(
+                        userId = "usr_jordan_02",
+                        timestamp = now - 3600000L * 3,
+                        steps = 11450,
+                        activeMinutes = 65,
+                        sleepHours = 6.4f,
+                        heartRate = 74,
+                        hydrationMl = 2400,
+                        notes = "Hospital rounds on feet all afternoon. High step count."
+                    ),
+                    HealthMetric(
+                        userId = "usr_jordan_02",
+                        timestamp = now - 86400000L * 1,
+                        steps = 10800,
+                        activeMinutes = 58,
+                        sleepHours = 6.8f,
+                        heartRate = 72,
+                        hydrationMl = 2200,
+                        notes = "Evening stationary cycling. Moderate cardio load."
+                    ),
+
+                    // Sam Rivera metrics
+                    HealthMetric(
+                        userId = "usr_sam_03",
+                        timestamp = now - 3600000L * 1,
+                        steps = 6200,
+                        activeMinutes = 35,
+                        sleepHours = 8.5f,
+                        heartRate = 62,
+                        hydrationMl = 1950,
+                        notes = "Pilates session and stretching. Resting heart rate optimal."
+                    ),
+                    HealthMetric(
+                        userId = "usr_sam_03",
+                        timestamp = now - 86400000L * 1,
+                        steps = 7150,
+                        activeMinutes = 45,
+                        sleepHours = 8.1f,
+                        heartRate = 64,
+                        hydrationMl = 2300,
+                        notes = "Brisk trail hike with resistance pack."
+                    )
+                )
+                repository.insertMetrics(seededMetrics)
+            }
+        }
     }
 
     private fun startReplicationSimulation() {
@@ -353,11 +501,97 @@ class SyncViewModel(private val repository: SyncRepository) : ViewModel() {
         }
     }
 
-    // Insert logged user health metrics manually
+    // Switch active user profile
+    fun switchProfile(profileId: String, context: Context? = null) {
+        _activeProfileId.value = profileId
+        context?.let { ctx ->
+            ctx.getSharedPreferences("heal_sync_prefs", Context.MODE_PRIVATE)
+                .edit()
+                .putString("active_profile_id", profileId)
+                .apply()
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            val targetProfile = allProfiles.value.find { it.id == profileId }
+            val name = targetProfile?.name ?: profileId
+            repository.insertEvent(
+                SyncEvent(
+                    timestamp = System.currentTimeMillis(),
+                    eventType = "Profile Switch",
+                    status = "SUCCESS",
+                    recordsSynced = 1,
+                    details = "Switched active user profile to '$name' (ID: $profileId). Associated health ledger mounted."
+                )
+            )
+        }
+    }
+
+    // Create a new user profile with a unique ID
+    fun createProfile(
+        name: String,
+        email: String = "",
+        age: Int = 28,
+        bloodType: String = "O+",
+        avatarColorHex: String = "#10B981"
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val sanitizedSlug = name.trim().lowercase().replace(Regex("[^a-z0-9]"), "_").take(8).ifEmpty { "user" }
+            val randomSuffix = UUID.randomUUID().toString().substring(0, 4)
+            val newId = "usr_${sanitizedSlug}_$randomSuffix"
+            val newProfile = UserProfile(
+                id = newId,
+                name = name.trim().ifEmpty { "New User" },
+                email = email.trim(),
+                age = age,
+                bloodType = bloodType,
+                avatarColorHex = avatarColorHex,
+                syncTarget = "Custom Ledger Node",
+                createdAt = System.currentTimeMillis()
+            )
+            repository.insertProfile(newProfile)
+            _activeProfileId.value = newId
+            repository.insertEvent(
+                SyncEvent(
+                    timestamp = System.currentTimeMillis(),
+                    eventType = "Profile Created",
+                    status = "SUCCESS",
+                    recordsSynced = 1,
+                    details = "Provisioned new profile '${newProfile.name}' with Unique ID: $newId."
+                )
+            )
+        }
+    }
+
+    // Delete a user profile and its associated health metrics
+    fun deleteProfile(profileId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val profiles = allProfiles.value
+            if (profiles.size <= 1) return@launch // Prevent deleting last remaining profile
+            repository.deleteProfile(profileId)
+            if (_activeProfileId.value == profileId) {
+                val fallback = profiles.firstOrNull { it.id != profileId }
+                if (fallback != null) {
+                    _activeProfileId.value = fallback.id
+                }
+            }
+            repository.insertEvent(
+                SyncEvent(
+                    timestamp = System.currentTimeMillis(),
+                    eventType = "Profile Removed",
+                    status = "SUCCESS",
+                    recordsSynced = 0,
+                    details = "Deleted user profile with ID: $profileId and cleaned associated telemetry records."
+                )
+            )
+        }
+    }
+
+    // Insert logged user health metrics manually, linked to active user profile ID
     fun logMetricSnapshot(steps: Int, activeMinutes: Int, sleepHours: Float, heartRate: Int, hydrationMl: Int, notes: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val timestamp = System.currentTimeMillis()
+            val currentUserId = _activeProfileId.value
             val metric = HealthMetric(
+                userId = currentUserId,
                 timestamp = timestamp,
                 steps = steps,
                 activeMinutes = activeMinutes,
@@ -368,13 +602,14 @@ class SyncViewModel(private val repository: SyncRepository) : ViewModel() {
             )
             repository.insertMetric(metric)
 
+            val activeName = activeProfile.value?.name ?: currentUserId
             repository.insertEvent(
                 SyncEvent(
                     timestamp = timestamp,
                     eventType = "Local Log",
                     status = "SUCCESS",
                     recordsSynced = 1,
-                    details = "Manually logged health snap metrics. (Steps: $steps, Sleep: ${sleepHours}h, HeartRate: $heartRate bpm)."
+                    details = "Manually logged health snap metrics for $activeName ($currentUserId). (Steps: $steps, Sleep: ${sleepHours}h, HeartRate: $heartRate bpm)."
                 )
             )
 
@@ -553,6 +788,10 @@ class SyncViewModel(private val repository: SyncRepository) : ViewModel() {
         _isTrackerShieldEnabled.value = prefs.getBoolean("tracker_shield_enabled", true)
         _isScreenshotSecurityEnabled.value = prefs.getBoolean("screenshot_security_enabled", false)
         _trackersBlockedCount.value = prefs.getInt("trackers_blocked", 32)
+        val savedProfileId = prefs.getString("active_profile_id", null)
+        if (!savedProfileId.isNullOrEmpty()) {
+            _activeProfileId.value = savedProfileId
+        }
     }
 
     fun toggleGoogleSso(context: Context) {

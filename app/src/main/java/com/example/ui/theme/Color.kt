@@ -27,3 +27,13 @@ val Slate700 = Color(0xFF334155)
 val Slate800 = Color(0xFF1E293B)
 val Slate900 = Color(0xFF0F172A)
 val Slate950 = Color(0xFF020617)
+
+// Semantic Accents and Aliases
+val Emerald500 = Color(0xFF10B981)
+val Emerald400 = Color(0xFF34D399)
+val Cyan400 = Color(0xFF22D3EE)
+val CrimsonError = Color(0xFFEF4444)
+val TextPrimary = Color(0xFFF1F5F9)
+val TextSecondary = Color(0xFFCBD5E1)
+val TextMuted = Color(0xFF94A3B8)
+

@@ -40,7 +40,8 @@ fun HealthMetricsVisualizer(
     viewModel: SyncViewModel,
     modifier: Modifier = Modifier
 ) {
-    val metrics by viewModel.allMetrics.collectAsStateWithLifecycle()
+    val metrics by viewModel.currentMetrics.collectAsStateWithLifecycle()
+    val activeProfile by viewModel.activeProfile.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     // Calculated fields based on state
@@ -77,8 +78,8 @@ fun HealthMetricsVisualizer(
                         style = MaterialTheme.typography.titleLarge.copy(color = Color.White)
                     )
                     Text(
-                        text = "Dynamic SQLite analytics and calendar agenda streams",
-                        style = MaterialTheme.typography.labelSmall.copy(color = Slate400)
+                        text = "Ledger for: ${activeProfile?.name ?: "Active User"} (${activeProfile?.id ?: "usr_..."})",
+                        style = MaterialTheme.typography.labelSmall.copy(color = Cyan400)
                     )
                 }
             }
